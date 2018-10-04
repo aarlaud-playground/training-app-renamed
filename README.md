@@ -31,7 +31,7 @@ RunningUnitTests:
         set:
           - '${{BuildingDockerImage.imageId}}':
               - CF_QUALITY: false
-              ```
+```
 
 ### Scan Docker Image
 ```
@@ -70,7 +70,7 @@ RunningUnitTests:
           set: # Specify the set operation
             - ${{BuildingDockerImage.imageId}}: # Select any number of target images
               - SECURITY_SCAN: false 
-              ```
+```
 
 ## Instructions
 
