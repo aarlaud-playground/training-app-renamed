@@ -1,3 +1,4 @@
+[logo]: https://res.cloudinary.com/snyk/image/upload/v1533761770/logo-1_wtob68.svg
 # Snyk Codefresh Example
 This example application has a sample application along with a Codefresh pipeline that can build, scan, and promote a Docker image. 
 
