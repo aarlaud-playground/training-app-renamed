@@ -2,6 +2,74 @@
 This example application has a sample application along with a Codefresh pipeline that can build, scan, and promote a Docker image. 
 
 *Warning* These instructions are incomplete. Some variables in the pipeline need to be updated to match your environment. Update coming soon. 
+## Using the plugin
+### Scan Code
+``` 
+RunningUnitTests:
+    stage: scan
+    title: Running Unit Tests
+    image: '${{BuildingDockerImage}}'
+    working_directory: IMAGE_WORK_DIR
+    entry_point:
+      - /bin/sh
+      - /codefresh/volume/cf-generated/unit_test_script
+    create_file:
+      path: /codefresh/volume/cf-generated
+      name: unit_test_script
+      content: |-
+        npm install -g snyk
+        snyk test || true
+    on_success:
+      metadata:
+        set:
+          - '${{BuildingDockerImage.imageId}}':
+              - CF_QUALITY: true
+    on_fail:
+      metadata:
+        set:
+          - '${{BuildingDockerImage.imageId}}':
+              - CF_QUALITY: false
+              ```
+
+### Scan Docker Image
+```
+  SnykScanImage:
+      stage: scan
+      type: composition
+      composition:
+        version: '2'
+        services:
+          targetimage:
+            image: ${{BuildingDockerImage}} # Must be the Docker build step name
+            command: sh -c "exit 0"
+            labels:
+              build.image.id: ${{CF_BUILD_ID}} # Provides a lookup for the composition
+      composition_candidates:
+        scan_service:
+          image: aarlaudsnyk/snyk-container-scan-docker
+          command: python snyk-cli.py "${{IMAGE_NAME}}:${{CF_BRANCH_TAG_NORMALIZED}}"
+          environment:
+          - SNYK_TOKEN=${{SNYK_TOKEN}}
+          - SNYK_ORG=${{SNYK_ORG}}
+          depends_on:
+            - targetimage
+          volumes: # Volumes required to run DIND
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /var/lib/docker:/var/lib/docker
+      add_flow_volume_to_composition: true
+      on_success: # Execute only once the step succeeded
+        metadata: # Declare the metadata attribute
+          set: # Specify the set operation
+            - ${{BuildingDockerImage.imageId}}: # Select any number of target images
+              - SECURITY_SCAN: true
+
+      on_fail: # Execute only once the step failed
+        metadata: # Declare the metadata attribute
+          set: # Specify the set operation
+            - ${{BuildingDockerImage.imageId}}: # Select any number of target images
+              - SECURITY_SCAN: false 
+              ```
+
 ## Instructions
 
 ### Pre-requisites 
