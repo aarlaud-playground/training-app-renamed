@@ -1,0 +1,13 @@
+kind: pipeline
+name: snyk-drone-demo
+
+steps:
+- name: build-and-test  
+  image: node
+  environment:
+    SNYK_TOKEN:
+      from_secret: snyk_token
+  commands:
+  - npm install
+  - npm install -g snyk
+  - snyk test
