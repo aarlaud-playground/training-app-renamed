@@ -1,7 +1,7 @@
 {
   "name": "snykgym",
   "version": "1.0.0",
-  "description": "",
+  "description": "training project",
   "main": "index.js",
   "scripts": {
     "test": "snyk test",
